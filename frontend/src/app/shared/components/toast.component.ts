@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService, Toast } from '../../core/services/toast.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-toast',
@@ -8,7 +8,7 @@ import { ToastService, Toast } from '../../core/services/toast.service';
   imports: [CommonModule],
   template: `
     <div class="toast-container">
-      <div *ngFor="let toast of toasts$ | async" class="toast" [ngClass]="toast.type">
+      <div *ngFor="let toast of toastService.toasts$ | async" class="toast" [ngClass]="toast.type">
         <span>{{ toast.message }}</span>
         <button (click)="toastService.remove(toast.id)">×</button>
       </div>
@@ -39,6 +39,5 @@ import { ToastService, Toast } from '../../core/services/toast.service';
   `]
 })
 export class ToastComponent {
-  toasts$ = this.toastService.toasts$;
-  constructor(public toastService: ToastService) {}
+  toastService = inject(ToastService);
 }

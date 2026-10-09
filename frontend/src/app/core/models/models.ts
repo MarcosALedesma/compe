@@ -13,8 +13,14 @@ export interface Alumno {
   tutor: string;
   telefono_tutor: string;
   activo: boolean;
+  curso?: {
+    id: number;
+    anio: number;
+    division: string;
+    turno: string;
+  };
+  curso_id?: number;
 }
-
 export interface Docente {
   id: number;
   dni: string;

@@ -18,9 +18,12 @@ export class ToastService {
     const toast: Toast = { message, type, id };
     const current = this.toastsSubject.value;
     this.toastsSubject.next([...current, toast]);
-
     setTimeout(() => this.remove(id), 4000);
   }
+
+  success(message: string) { this.show(message, 'success'); }
+  error(message: string) { this.show(message, 'error'); }
+  info(message: string) { this.show(message, 'info'); }
 
   remove(id: number) {
     const current = this.toastsSubject.value.filter(t => t.id !== id);
