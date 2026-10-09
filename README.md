@@ -1,151 +1,314 @@
-# Prime Dev 2026 - Sistema de Gestión Escolar EETP N° 602
+# Prime Dev 2026 — Sistema de Gestión Escolar EETP N° 602
 
-## Situación problemática
-La EETP N° 602 "General José de San Martín" (San Martín 2260, Venado Tuerto, Santa Fe) necesita una **aplicación web responsiva para gestionar su vida escolar**: alumnos, docentes, cursos, calificaciones, asistencia y calendario institucional. Hoy esa información está repartida en planillas y papel, y la dirección no puede responder rápido preguntas como "¿cuántos alumnos tiene 4º año?" o "¿quiénes adeudan materias?".
+Aplicación web responsiva para gestionar la vida escolar de la **E.E.T.P. N° 602 "General José de San Martín"** (San Martín 2260, Venado Tuerto, Santa Fe): alumnos, docentes, cursos, calificaciones, asistencias y calendario institucional.
 
-**Objetivo:** en 5 horas, cada equipo (máx. 3 integrantes, Art. 2) desarrolla el sistema con frontend responsivo, backend y base de datos. La aplicación ganadora será implementada por la escuela (Arts. 4 y 8).
+Desarrollada en el marco de **Prime Dev 2026** (5 horas de competencia, 9 de octubre de 2026).
 
-**Usuarios del sistema:** Directivo/Preceptor (administra todo), Docente (carga notas y asistencia de sus materias) y, como desafío, Alumno (consulta sus notas).
+---
 
-## Requisitos técnicos obligatorios
-Tecnologías libres (Art. 4), pero toda entrega debe cumplir:
-1. **Frontend responsivo:** usable en celular (360 px) y en PC.
-2. **Backend propio con API** (REST o similar) que valide los datos antes de guardarlos.
-3. **Base de datos relacional** (MySQL, PostgreSQL, SQLite, SQL Server, etc.) con claves primarias, foráneas y restricciones. Se entrega el script `schema.sql` o las migraciones.
-4. **Login con roles** (mínimo Directivo y Docente). Contraseñas hasheadas, nunca en texto plano.
-5. **Repositorio Git** con commits durante la competencia (no un único commit final) y un `README.md` con cómo levantar el proyecto.
-6. **Validaciones:** nota entre 1 y 10, DNI único, fechas válidas, no inscribir dos veces al mismo alumno en un curso.
+## 🎯 Objetivo
 
-**Permitido:** internet, frameworks, librerías, plantillas de UI y asistentes de IA.
-**Prohibido:** consultar al docente acompañante (Art. 4) y usar un sistema escolar ya hecho.
+Reemplazar las planillas y el papel por un sistema centralizado que permita a la dirección responder rápido preguntas como:
 
-## Módulos funcionales
-Los módulos están en tres niveles. Solo suma puntos un nivel superior si el anterior funciona completo.
+- ¿Cuántos alumnos tiene 4º año?
+- ¿Quiénes adeudan materias?
+- ¿Qué curso tiene más faltas?
+- ¿Cuál es el promedio general de cada curso?
 
-| Nivel | Módulo | Qué debe hacer | Puntos |
-| :--- | :--- | :--- | :--- |
-| **1 · Básico** | Alumnos | ABM (alta, baja lógica, modificación), búsqueda por DNI/apellido, asignación a curso | 8 |
-| **1 · Básico** | Docentes | ABM, materias que dicta, datos de contacto | 6 |
-| **1 · Básico** | Cursos y materias | Cursos 1º a 6º año con división y turno; materias por curso con docente asignado | 6 |
-| **2 · Intermedio** | Calificaciones | Carga de notas por trimestre (1º, 2º, 3º), promedio anual automático, estado Aprobado / Diciembre / Febrero / Previa | 10 |
-| **2 · Intermedio** | Asistencia | Toma diaria por curso (Presente / Ausente / Tarde = ½ falta), total de inasistencias por alumno, alerta al llegar a 20 | 6 |
-| **2 · Intermedio** | Calendario | Fechas importantes: actos, mesas de examen, cierre de trimestre, Encuentro Tecnológico (9/10). Vista mensual o lista | 4 |
-| **3 · Avanzado** | Panel de dirección | Total de alumnos y docentes, alumnos por año (gráfico), promedio por curso, top 5 con más faltas, materias con más desaprobados | 6 |
-| **3 · Avanzado** | Boletín | Boletín del alumno exportable a PDF o imprimible | 2 |
-| **3 · Avanzado** | Portal del alumno | El alumno inicia sesión y ve solo sus notas, faltas y próximas fechas | 2 |
+---
 
-**Bonus (hasta +5 pts extra):** Importar alumnos desde CSV, modo oscuro, auditoría de quién modificó una nota, deploy público funcionando.
+## 👥 Usuarios y roles
 
-## Modelo de datos mínimo
-Estas son las entidades mínimas esperadas. Cada equipo puede agregar tablas y campos; el jurado evalúa normalización y relaciones.
+| Rol | Qué puede hacer |
+|---|---|
+| **Directivo / Preceptor** | Administra todo: alumnos, docentes, cursos, materias, calificaciones, asistencias, eventos, panel de métricas, boletines. |
+| **Docente** | Carga notas y asistencias de sus materias. Consulta sus cursos. |
+| **Alumno** | Ve solo sus notas, faltas y próximos eventos (portal del alumno). |
 
-| Tabla | Campos clave | Relación |
-| :--- | :--- | :--- |
-| **usuarios** | id, email, password_hash, rol | 1 a 1 con docente o alumno |
-| **alumnos** | id, dni (único), apellido, nombre, fecha_nac, tutor, telefono_tutor, activo | N a 1 con cursos |
-| **docentes** | id, dni (único), apellido, nombre, email, telefono | 1 a N con materias_curso |
-| **cursos** | id, anio (1-6), division, turno, ciclo_lectivo | 1 a N con alumnos |
-| **materias** | id, nombre, anio | N a N con cursos |
-| **materias_curso** | id, curso_id, materia_id, docente_id | une curso, materia y docente |
-| **calificaciones** | id, alumno_id, materia_curso_id, trimestre (1-3), nota (1-10) | único por alumno + materia + trimestre |
-| **asistencias** | id, alumno_id, fecha, estado (P/A/T) | único por alumno + fecha |
-| **eventos** | id, titulo, tipo (acto, examen, feriado, institucional), fecha_inicio, fecha_fin, curso_id (opcional) | opcional por curso |
+---
 
-*El promedio anual y el estado del alumno se calculan, no se guardan a mano.*
+## 🧱 Stack tecnológico
 
-## Datos de prueba
-Cada equipo debe cargar (por seed o script) al menos este volumen, para que el jurado pruebe en igualdad de condiciones:
-- 6 cursos (1º a 6º año, división A, turno mañana).
-- 60 alumnos ficticios (10 por curso).
-- 8 docentes y 5 materias por curso.
-- Notas de los 3 trimestres para 2 cursos completos.
-- Asistencia de 10 días hábiles para 1 curso.
-- 5 eventos en el calendario, incluido el Encuentro Tecnológico del 9/10/2026.
-- Usuarios: `director@eetp602.test` y `docente@eetp602.test`, contraseña `Prime2026!`.
+### Backend
+- **Bun** (runtime) — usa `bun:sqlite` nativo
+- **Express** — servidor HTTP y ruteo
+- **SQLite** — base de datos relacional (archivo `backend/data/app.db`)
+- **JWT** — autenticación con roles
+- **bcrypt** — hash de contraseñas
+- **express-validator** — validación de datos de entrada
 
-**Casos que el jurado va a probar en vivo:**
-1. Cargar una nota 11 o 0: debe rechazarla.
-2. Crear un alumno con DNI repetido: debe rechazarlo.
+### Frontend
+- **Angular 18** (standalone components, signals, control flow `@if` / `@for`)
+- **Bootstrap Icons** (locales, sin CDN)
+- Responsive: usable en celular (360 px) y PC
 
-## Rúbrica de evaluación (100 pts + 5 bonus)
-Basada en los cuatro criterios del Art. 5 del reglamento, más la etapa de Presentación (Art. 3).
+### Base de datos
+- SQLite con claves primarias, foráneas y restricciones `UNIQUE`
+- Script de creación: `backend/schema.sql`
+- El promedio anual y el estado académico se **calculan**, no se guardan
 
-**Entregables al cierre:** link al repositorio, `README.md`, `schema.sql` o migraciones, y la app corriendo (local o deploy) lista para la demo.
+---
 
-| Criterio | Qué mira el jurado | Puntos |
-| :--- | :--- | :--- |
-| **Funcionalidad y operatividad** | Puntos de cada módulo según la tabla de módulos; casos de prueba en vivo | 50 |
-| **Estructura del código** | Separación frontend / backend / datos, carpetas ordenadas, nombres claros, base normalizada con FK | 15 |
-| **Buenas prácticas** | Validaciones en backend, contraseñas hasheadas, consultas parametrizadas (sin SQL Injection), commits frecuentes, README | 15 |
-| **Presentación** | Demo clara en 5 min, respuestas del portavoz | 5 |
-| **Bonus** | Extras del nivel avanzado (CSV, auditoría, deploy, modo oscuro) | +5 |
+## 📁 Estructura del proyecto
 
-*Si la app no levanta en la demo, Funcionalidad se puntúa en 0.*
+```
+compe/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # db.js (conexión + tablas + vistas)
+│   │   ├── controllers/     # lógica HTTP por recurso
+│   │   ├── middlewares/     # auth.js, role.js
+│   │   ├── routes/          # un archivo por recurso
+│   │   ├── services/        # lógica de negocio (promedios, faltas)
+│   │   ├── utils/           # helpers (HttpError, jwt, etc.)
+│   │   ├── seed/            # seed.js (datos de prueba)
+│   │   └── server.js        # punto de entrada
+│   ├── data/
+│   │   └── app.db           # SQLite (generado por el seed, NO se commitea)
+│   ├── db/
+│   │   └── schema.sql       # esquema de la base
+│   ├── .env.example         # plantilla de variables de entorno
+│   └── package.json
+├── frontend/                # Angular 18
+│   └── src/app/
+│       ├── core/            # guards, interceptors, servicios
+│       ├── shared/          # componentes reutilizables
+│       └── features/        # módulos por dominio (alumnos, notas, etc.)
+├── API.md                   # contrato de la API
+├── CHEATSHEET.md            # comandos útiles
+├── README.md
+└── .gitignore
+```
 
-## Presentación y desempate
-En la presentación, el portavoz muestra en este orden: login como director, panel con métricas, carga de una nota, boletín de un alumno y la vista en celular. Solo el portavoz responde al jurado (Art. 2).
+---
 
-**Desempate, en este orden:**
-1. Mayor puntaje en Funcionalidad.
-2. Hora del último checkpoint cumplido (gana el más temprano).
-3. Mayor puntaje en Buenas prácticas.
-4. Decisión del jurado, inapelable (Art. 1).
+## 🚀 Puesta en marcha
 
-**Premio:** diploma de participación para todos, mención especial al ganador y su aplicación será la que use la EETP N° 602 (Art. 8).
+### Requisitos previos
 
-## Cronograma del 9 de octubre y entregables
-El desarrollo dura 5 horas exactas (9:20 a 14:20). Los checkpoints dan puntos por tiempo (Art. 5); el jurado pasa por cada mesa y verifica en vivo.
+- **Bun** 1.4 o superior → [instalar](https://bun.sh)
+- **Node.js** 18.19+ / 20.11+ / 22 → necesario solo para el Angular CLI
+- Verificar versiones:
+  ```bash
+  bun -v
+  node -v
+  ```
 
-| Hora | Momento | Qué se verifica |
-| :--- | :--- | :--- |
-| 9:00 | Acreditación y entrega de consigna | Equipo y portavoz registrados |
-| 9:20 | Inicio del desarrollo | Repositorio creado |
-| 11:20 | Checkpoint 1 | Nivel 1 funcionando + base de datos con seed |
-| 13:20 | Checkpoint 2 | Nivel 2 funcionando |
-| 14:20 | Fin del desarrollo | Último commit; después de esta hora no se aceptan cambios |
-| 14:30 | Presentaciones | 5 min por equipo + 2 min de preguntas |
-
-# Angular + Express
-
-Ejemplo completo: **tienda con carrito** (auth JWT, productos, carrito, checkout con transacción, pedidos).
-Sirve de base para cualquier consigna: copiás, renombrás entidades y listo.
-
-## Puesta en marcha (hacerlo ANTES de la competencia)
+### 1. Clonar el repositorio
 
 ```bash
-# 1) Dependencias
-bun run install:all                 # raíz + backend + frontend
+git clone <url-del-repo>
+cd compe
+```
 
-# 2) Datos de prueba (crea backend/data/app.db)
+### 2. Instalar dependencias
+
+```bash
+bun run install:all
+```
+
+Esto instala dependencias en la raíz, en `backend/` y en `frontend/`.
+
+### 3. Configurar variables de entorno
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Editá `backend/.env` si hace falta (puerto, secreto JWT, etc.).
+
+### 4. Cargar datos de prueba
+
+```bash
 bun run seed
+```
 
-# 3) Levantar todo (back :3000 + front :4200 con proxy a /api)
+Esto crea `backend/data/app.db` con:
+
+- 6 cursos (1º a 6º año, división A, turno mañana)
+- 60 alumnos ficticios (10 por curso)
+- 8 docentes y 5 materias por curso
+- Notas de los 3 trimestres para 2 cursos completos
+- Asistencia de 10 días hábiles para 1 curso
+- 5 eventos, incluido el **Encuentro Tecnológico del 9/10/2026**
+- Usuarios de prueba (ver abajo)
+
+### 5. Levantar todo
+
+```bash
 bun run dev
 ```
 
-Usuarios de prueba: `admin@test.com / admin123` · `user@test.com / user123`
+- Backend: http://localhost:3000
+- Frontend: http://localhost:4200 (con proxy a `/api`)
 
-## Estructura
+---
 
+## 🔑 Usuarios de prueba
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| `director@eetp602.test` | `Prime2026!` | directivo |
+| `docente@eetp602.test` | `Prime2026!` | docente |
+| (alumno del seed) | `Prime2026!` | alumno |
+
+> El login del alumno se crea en el seed. Revisá `backend/src/seed/seed.js` para ver el email exacto.
+
+---
+
+## 📚 Módulos implementados
+
+### Nivel 1 — Básico
+
+- **Alumnos**: ABM, baja lógica, búsqueda por DNI/apellido, asignación a curso.
+- **Docentes**: ABM, materias que dicta, datos de contacto.
+- **Cursos y materias**: cursos 1º a 6º con división y turno; materias por curso con docente asignado.
+
+### Nivel 2 — Intermedio
+
+- **Calificaciones**: carga por trimestre (1º, 2º, 3º), promedio anual automático, estado Aprobado / Diciembre / Febrero / Previa.
+- **Asistencia**: toma diaria (Presente / Ausente / Tarde = ½ falta), total de inasistencias por alumno, alerta al llegar a 20.
+- **Calendario**: actos, mesas de examen, cierre de trimestre, Encuentro Tecnológico.
+
+### Nivel 3 — Avanzado
+
+- **Panel de dirección**: totales, alumnos por año, promedio por curso, top 5 con más faltas, materias con más desaprobados.
+- **Boletín**: individual y por curso, exportable a PDF / imprimible.
+- **Portal del alumno**: login propio, ve solo sus notas, faltas y eventos.
+
+### Bonus implementados
+
+- ✅ **Importar alumnos desde CSV** (`POST /alumnos/importar`)
+- ✅ **Auditoría de cambios de notas** (`GET /calificaciones/auditoria`)
+- ⬜ Modo oscuro
+- ⬜ Deploy público
+
+---
+
+## 🗄️ Modelo de datos
+
+Tablas principales:
+
+| Tabla | Descripción |
+|---|---|
+| `usuarios` | Login con rol (`directivo`, `docente`, `alumno`), contraseña hasheada |
+| `alumnos` | DNI único, datos personales, `activo` (baja lógica), `curso_id` |
+| `docentes` | DNI único, datos de contacto |
+| `cursos` | Año (1-6), división, turno, ciclo lectivo |
+| `materias` | Nombre, año |
+| `materias_curso` | Une curso + materia + docente |
+| `calificaciones` | Único por alumno + materia_curso + trimestre. Nota 1-10 |
+| `asistencias` | Único por alumno + fecha. Estado P/A/T |
+| `eventos` | Título, tipo, fechas, curso opcional |
+| `auditoria_notas` | Quién y cuándo modificó una nota (bonus) |
+
+El **promedio anual** y el **estado académico** se calculan en el backend a partir de las notas trimestrales.
+
+Esquema completo: `backend/db/schema.sql`.
+
+---
+
+## 🔌 API
+
+Contrato completo en [`API.md`](./API.md).
+
+Base URL: `http://localhost:3000/api`
+
+Todas las rutas (excepto `/auth/login`) requieren `Authorization: Bearer <token>`.
+
+---
+
+## ✅ Validaciones clave
+
+- Nota entre **1 y 10** (rechaza 0 y 11)
+- Trimestre entre **1 y 3**
+- DNI **único** (rechaza duplicados)
+- Fechas válidas (formato y existencia real)
+- No inscribir dos veces al mismo alumno en un curso
+- Contraseñas **hasheadas** con bcrypt
+- Consultas **parametrizadas** (sin SQL Injection)
+
+---
+
+## 🧪 Casos de prueba en vivo (jurado)
+
+| Caso | Resultado esperado |
+|---|---|
+| Cargar nota **11** | `400` — rechazada |
+| Cargar nota **0** | `400` — rechazada |
+| Crear alumno con **DNI repetido** | `409` — rechazado |
+| Trimestre fuera de 1-3 | `400` — rechazado |
+| Estado de asistencia distinto de P/A/T | `400` — rechazado |
+| Evento con `fecha_fin < fecha_inicio` | `400` — rechazado |
+| Docente intentando ver panel de dirección | `403` |
+| Alumno intentando ver boletín ajeno | `403` |
+
+---
+
+## 📜 Scripts disponibles
+
+Desde la raíz del proyecto:
+
+| Comando | Qué hace |
+|---|---|
+| `bun run install:all` | Instala dependencias en raíz + backend + frontend |
+| `bun run seed` | Crea y puebla `backend/data/app.db` |
+| `bun run dev` | Levanta backend (`:3000`) y frontend (`:4200`) en paralelo |
+
+Desde `backend/`:
+
+| Comando | Qué hace |
+|---|---|
+| `bun --watch src/server.js` | Levanta solo el backend con auto-reload |
+
+Desde `frontend/`:
+
+| Comando | Qué hace |
+|---|---|
+| `bun run start` | Levanta solo el frontend |
+
+---
+
+## 🛠️ Troubleshooting
+
+### El backend no arranca: "Cannot find module"
+
+Revisá que todos los controllers referenciados en `routes/` existan. Bun resuelve imports en tiempo de carga: un solo archivo faltante tumba todo el server.
+
+### `bun:sqlite` no funciona con Node
+
+El backend usa `bun:sqlite`, que **solo existe en Bun**. No intentes correrlo con `node src/server.js`.
+
+### Angular CLI pide Node
+
+El Angular CLI sí necesita Node instalado (18.19+ / 20.11+ / 22). Bun solo no alcanza.
+
+### Acentos rotos en la consola Windows
+
+No es un bug del backend: es la consola. Los datos se guardan bien en UTF-8. Para verlos bien:
+
+```powershell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 ```
-backend/   Express + SQLite (bun:sqlite, viene con Bun), JWT, express-validator
-  src/{config,controllers,routes,middlewares,utils,seed}
-frontend/  Angular 18 (standalone, signals, control flow @if/@for)
-  src/app/{core,shared,features}
-API.md     Contrato de la API (acordar con el compañero)
-CHEATSHEET.md  Comandos y snippets que se olvidan
+
+### El seed no crea la base
+
+Verificá que exista la carpeta `backend/data/`. Si no, creala:
+
+```powershell
+New-Item -ItemType Directory -Force backend\data
 ```
 
-## Cómo adaptarlo a otra consigna
-1. **Modelo de datos**: editar `backend/src/config/db.js` (tablas) y `seed/seed.js`.
-2. **Back**: copiar `products.controller.js` como CRUD base → nuevo controller + rutas en `routes/index.js`.
-3. **Front**: copiar `features/products/` → nueva feature, agregar ruta en `app.routes.ts`.
-4. Reutilizar tal cual: auth, interceptors, guards, `ApiService`, toast, modal, estilos de `styles.css`.
+---
 
-## Notas
-- **Bun + Node**: el back corre con Bun (usa `bun:sqlite`, no funciona con Node). El Angular CLI sí necesita **Node instalado** (18.19+ / 20.11+ / 22) además de Bun. Mismo `bun -v` y `node -v` en ambas compus. Probado con Bun 1.4 y Node 22.
-- **Comandos del CLI de Angular**: `bunx ng generate component ...` (o `bun run ng ...`).
-- **Build de producción** (`ng build`): ya viene con la inlineación de fuentes desactivada, así que funciona sin internet. La fuente Inter se carga por Google Fonts en `index.html` (si no hay internet cae a la fuente del sistema).
-- **Imágenes** del seed vienen de picsum.photos (requiere internet). Sin internet se ve el gris de fondo; cambiá `image_url` en el seed por rutas locales si hace falta.
-- **Iconos**: Bootstrap Icons instalados localmente (`bun install` los trae, ya están en `angular.json`). Uso: `<i class="bi bi-cart"></i>`. Funcionan sin internet.
-- `.env` está en `.gitignore`; el repo trae `.env.example`.
+## 👨‍💻 Equipo "polenta con salsa"
+
+- Integrante 1:Marcos Ledesma
+- Integrante 2:Agustin Lanthier
+
+
+---
+
+## 📄 Licencia
+
+Proyecto desarrollado para **Prime Dev 2026**. La aplicación ganadora será implementada por la E.E.T.P. N° 602 (Art. 8 del reglamento).
