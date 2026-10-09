@@ -1,69 +1,369 @@
-/* ===== Reset ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-img { max-width: 100%; display: block; }
-button, input, select, textarea { font: inherit; }
-a { color: inherit; text-decoration: none; }
+/* ============================================
+   SISTEMA EETP N° 602 - Estilos Globales
+   Paleta: Amarillo / Negro / Rojo / Blanco
+   ============================================ */
 
-/* ===== Variables ===== */
 :root {
-  --primary: #4f46e5; --primary-dark: #4338ca; --secondary: #0ea5e9;
-  --success: #16a34a; --danger: #dc2626; --warning: #f59e0b;
-  --bg: #f5f6fa; --surface: #fff; --text: #1f2937; --muted: #6b7280; --border: #e5e7eb;
-  --radius: 10px; --shadow: 0 2px 10px rgba(0,0,0,.08);
-  --s1: .25rem; --s2: .5rem; --s3: 1rem; --s4: 1.5rem; --s5: 2.5rem;
+  /* Colores institucionales */
+  --amarillo: #FFC107;
+  --amarillo-oscuro: #E0A800;
+  --amarillo-claro: #FFD54F;
+  --negro: #111111;
+  --negro-suave: #1C1C1C;
+  --rojo: #D32F2F;
+  --rojo-oscuro: #B71C1C;
+  --blanco: #FFFFFF;
+  --gris-claro: #F5F5F5;
+  --gris-medio: #E0E0E0;
+  --gris-texto: #555555;
+
+  /* Tipografía */
+  --fuente: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --radio: 8px;
+  --sombra: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --sombra-fuerte: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
-body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
 
-/* ===== Layout ===== */
-.container { max-width: 1100px; margin: 0 auto; padding: var(--s4) var(--s3); }
-.row { display: flex; gap: var(--s3); align-items: center; }
-.between { justify-content: space-between; }
-.wrap { flex-wrap: wrap; }
-.col { display: flex; flex-direction: column; gap: var(--s2); }
-.grid { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
-.center { text-align: center; }
-.muted { color: var(--muted); }
-.mt { margin-top: var(--s3); } .mb { margin-bottom: var(--s3); }
+* {
+  box-sizing: border-box;
+}
 
-/* ===== Botones ===== */
-.btn { display: inline-flex; align-items: center; gap: var(--s2); padding: .55rem 1rem; border: 0; border-radius: var(--radius);
-  background: var(--primary); color: #fff; cursor: pointer; font-weight: 500; transition: background .15s; }
-.btn:hover { background: var(--primary-dark); }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
-.btn-outline:hover { background: var(--primary); color: #fff; }
-.btn-danger { background: var(--danger); } .btn-danger:hover { background: #b91c1c; }
-.btn-sm { padding: .3rem .6rem; font-size: .85rem; }
-.btn-block { width: 100%; justify-content: center; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--fuente);
+  background: var(--gris-claro);
+  color: #333;
+  min-height: 100vh;
+}
 
-/* ===== Card ===== */
-.card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.card-body { padding: var(--s3); }
+/* ============================================
+   NAVBAR institucional
+   ============================================ */
+.navbar-institucional {
+  background: linear-gradient(180deg, var(--negro), #000);
+  color: var(--blanco);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 3px solid var(--amarillo);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-/* ===== Formularios ===== */
-.form { display: flex; flex-direction: column; gap: var(--s3); max-width: 420px; margin: 0 auto; }
-.field label { display: block; font-weight: 500; margin-bottom: var(--s1); }
-.input { width: 100%; padding: .55rem .75rem; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
-.input:focus { outline: 2px solid var(--primary); border-color: transparent; }
-.input.invalid { border-color: var(--danger); }
-.error { color: var(--danger); font-size: .85rem; margin-top: var(--s1); }
+.navbar-institucional .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--blanco);
+}
 
-/* ===== Tabla ===== */
-.table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
-.table th, .table td { padding: .7rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
-.table th { background: #f9fafb; font-size: .85rem; color: var(--muted); text-transform: uppercase; }
+.navbar-institucional .brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
 
-/* ===== Badges / Alertas ===== */
-.badge { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; background: var(--border); }
-.badge-success { background: #dcfce7; color: #166534; } .badge-warning { background: #fef3c7; color: #92400e; }
-.badge-danger { background: #fee2e2; color: #991b1b; } .badge-info { background: #e0f2fe; color: #075985; }
-.alert { padding: .75rem 1rem; border-radius: var(--radius); }
-.alert-danger { background: #fee2e2; color: #991b1b; } .alert-success { background: #dcfce7; color: #166534; }
+.navbar-institucional .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
 
-/* ===== Spinner / Modal ===== */
-.spinner { width: 32px; height: 32px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; margin: var(--s4) auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 100; }
-.modal { background: #fff; border-radius: var(--radius); padding: var(--s4); width: min(480px, 92vw); }
+.navbar-institucional .brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--amarillo);
+  letter-spacing: 0.5px;
+}
 
-@media (max-width: 600px) { .container { padding: var(--s3) var(--s2); } }
+.navbar-institucional .brand-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Links del navbar */
+.navbar-institucional .nav-links {
+  display: flex;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-institucional .nav-links a {
+  color: var(--blanco);
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.navbar-institucional .nav-links a:hover {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: var(--amarillo);
+  color: var(--amarillo);
+}
+
+.navbar-institucional .nav-links a.active {
+  background: var(--amarillo);
+  color: var(--negro);
+  border-color: var(--amarillo);
+}
+
+/* Info de usuario */
+.navbar-institucional .user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.btn-logout {
+  background: var(--rojo);
+  color: var(--blanco);
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--rojo-oscuro);
+}
+
+/* Menú hamburguesa */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: 2px solid var(--amarillo);
+  color: var(--amarillo);
+  border-radius: 6px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+}
+
+/* ============================================
+   Botones genéricos
+   ============================================ */
+.btn-primary {
+  background: var(--amarillo);
+  color: var(--negro);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: var(--amarillo-oscuro);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--negro);
+  color: var(--blanco);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #333;
+}
+
+.btn-danger {
+  background: var(--rojo);
+  color: var(--blanco);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: var(--rojo-oscuro);
+}
+
+/* ============================================
+   Títulos y contenedores
+   ============================================ */
+h1, h2, h3, h4 {
+  color: var(--negro);
+  font-weight: 800;
+}
+
+h1 {
+  border-bottom: 3px solid var(--amarillo);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ============================================
+   Tablas
+   ============================================ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  overflow: hidden;
+  box-shadow: var(--sombra);
+}
+
+.table th {
+  background: var(--negro);
+  color: var(--amarillo);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--gris-medio);
+}
+
+.table tbody tr:hover {
+  background: #FFFBEA;
+}
+
+/* ============================================
+   Formularios
+   ============================================ */
+input, select, textarea {
+  font-family: var(--fuente);
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--gris-medio);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--amarillo);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+}
+
+label {
+  font-weight: 600;
+  color: var(--negro);
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* ============================================
+   Cards y modales
+   ============================================ */
+.card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 1.5rem;
+  box-shadow: var(--sombra);
+  border-left: 4px solid var(--amarillo);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-top: 4px solid var(--amarillo);
+  box-shadow: var(--sombra-fuerte);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--negro);
+  border-bottom: 2px solid var(--amarillo);
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================
+   Estados
+   ============================================ */
+.aprobado { color: #2E7D32; font-weight: 700; }
+.desaprobado { color: var(--rojo); font-weight: 700; }
+.alerta-faltas {
+  color: var(--rojo);
+  font-weight: 700;
+  background: #FFEBEE;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--rojo);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 900px) {
+  .navbar-institucional .menu-toggle { display: block; }
+  .navbar-institucional .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--negro);
+    padding: 1rem;
+    gap: 0.25rem;
+    border-top: 2px solid var(--amarillo);
+  }
+  .navbar-institucional .nav-links.open { display: flex; }
+  .navbar-institucional .nav-links a { width: 100%; }
+  .navbar-institucional .user-info span { display: none; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 1rem; }
+  h1 { font-size: 1.4rem; }
+  .table th, .table td { padding: 0.5rem; font-size: 0.85rem; }
+  .navbar-institucional { padding: 0.5rem 1rem; }
+  .navbar-institucional .brand-title { font-size: 0.9rem; }
+}
