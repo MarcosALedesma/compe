@@ -1,0 +1,7 @@
+dni,apellido,nombre,fecha_nac,tutor,telefono_tutor,curso
+45999001,TestUno,Ana,2010-03-12,Madre Test,3462000001,1A
+45999002,TestDos,Bruno,2010-07-22,Padre Test,3462000002,2A
+45999003,TestTres,Carla,2009-11-05,Tutor Test,3462000003,3A
+123,MalDni,Diego,2010-01-01,T,3462000004,1A
+45999001,Duplicado,Eva,2010-02-02,T,3462000005,1A
+45999005,SinCurso,Fran,2010-04-04,T,3462000006,9Z
