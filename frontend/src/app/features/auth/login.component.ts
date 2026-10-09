@@ -46,10 +46,6 @@ import { Router } from '@angular/router';
       display: flex;
       justify-content: center;
       align-items: center;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255, 193, 7, 0.15), transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.1), transparent 50%),
-        #111;
       padding: 1rem;
     }
     .login-card {
@@ -76,7 +72,7 @@ import { Router } from '@angular/router';
     }
     .login-subtitle {
       margin: 0.25rem 0 0;
-      color: #FFC107;
+      color: #b68f1c;
       font-weight: 600;
       font-size: 0.85rem;
       text-transform: uppercase;
@@ -101,7 +97,7 @@ import { Router } from '@angular/router';
       box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
     }
     .btn-login {
-      background: #FFC107;
+      background: #e7bb36; 
       color: #111;
       border: none;
       padding: 0.85rem;

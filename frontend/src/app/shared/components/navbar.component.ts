@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <nav class="navbar-institucional">
-      <a routerLink="/dashboard" class="brand">
+      <a routerLink="/dashboard" class="brand" (click)="menuOpen = false">
         <img src="/escudo-minimalista.png" alt="Escudo EETP 602" class="brand-logo">
         <div class="brand-text">
           <span class="brand-title">Sistema EETP N° 602</span>
@@ -30,15 +30,22 @@ import { AuthService } from '../../core/services/auth.service';
         <li *ngIf="rol === 'docente'"><a routerLink="/asistencia" routerLinkActive="active" (click)="menuOpen = false">Asistencia</a></li>
         <li><a routerLink="/calendario" routerLinkActive="active" (click)="menuOpen = false">Calendario</a></li>
         <li><a routerLink="/boletin" routerLinkActive="active" (click)="menuOpen = false">Boletín</a></li>
+
+        <!-- Botón Salir DENTRO del menú hamburguesa (solo visible en mobile) -->
+        <li class="mobile-only">
+          <span class="user-email-mobile">{{ userEmail }}</span>
+          <button (click)="logout()" class="btn-logout-mobile">Salir</button>
+        </li>
       </ul>
 
+      <!-- Info de usuario en desktop -->
       <div class="user-info">
         <span>{{ userEmail }}</span>
         <button (click)="logout()" class="btn-logout">Salir</button>
       </div>
     </nav>
   `,
-  styles: [] // Los estilos están en styles.css global
+  styles: [] // Todos los estilos están en styles.css global
 })
 export class NavbarComponent implements OnInit {
   menuOpen = false;
@@ -56,6 +63,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout() {
+    this.menuOpen = false;
     this.auth.logout();
   }
 }
