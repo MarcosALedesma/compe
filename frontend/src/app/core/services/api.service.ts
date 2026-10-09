@@ -1,20 +1,34 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private http = inject(HttpClient);
-  private base = environment.apiUrl;
+  private apiUrl = environment.apiUrl || 'http://localhost:3000/api';
 
-  private params(obj?: Record<string, unknown>) {
-    let p = new HttpParams();
-    Object.entries(obj ?? {}).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== '') p = p.set(k, String(v)); });
-    return p;
+  constructor(private http: HttpClient) {}
+
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
   }
-  get<T>(path: string, query?: Record<string, unknown>) { return this.http.get<T>(`${this.base}${path}`, { params: this.params(query) }); }
-  post<T>(path: string, body: unknown = {}) { return this.http.post<T>(`${this.base}${path}`, body); }
-  put<T>(path: string, body: unknown) { return this.http.put<T>(`${this.base}${path}`, body); }
-  patch<T>(path: string, body: unknown) { return this.http.patch<T>(`${this.base}${path}`, body); }
-  delete<T>(path: string) { return this.http.delete<T>(`${this.base}${path}`); }
+
+  get<T>(path: string) {
+    return this.http.get<T>(`${this.apiUrl}${path}`, { headers: this.getHeaders() });
+  }
+
+  post<T>(path: string, body: any) {
+    return this.http.post<T>(`${this.apiUrl}${path}`, body, { headers: this.getHeaders() });
+  }
+
+  put<T>(path: string, body: any) {
+    return this.http.put<T>(`${this.apiUrl}${path}`, body, { headers: this.getHeaders() });
+  }
+
+  delete<T>(path: string) {
+    return this.http.delete<T>(`${this.apiUrl}${path}`, { headers: this.getHeaders() });
+  }
 }
