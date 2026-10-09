@@ -1,16 +1,15 @@
-import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { Rol } from '../models/models';
 
-export const roleGuard: CanActivateFn = (route) => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-
-  if (!auth.isLoggedIn()) return router.createUrlTree(['/login']);
-
-  const roles = route.data['roles'] as Rol[] | undefined;
-  if (!roles || (auth.rol() && roles.includes(auth.rol()!))) return true;
-
-  return router.createUrlTree([auth.homeRoute()]);
-};
+@Injectable({ providedIn: 'root' })
+export class RoleGuard implements CanActivate {
+  constructor(private auth: AuthService, private router: Router) {}
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    const expectedRole = route.data['expectedRole'];
+    const user = this.auth.getUser();
+    if (user && user.rol === expectedRole) return true;
+    this.router.navigate(['/dashboard']); // O a una página de no autorizado
+    return false;
+  }
+}
