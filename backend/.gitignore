@@ -1,0 +1,58 @@
+# ===== Dependencias =====
+node_modules/
+*/node_modules/
+.pnp
+.pnp.js
+bun.lockb
+package-lock.json
+
+# ===== Variables de entorno =====
+.env
+.env.local
+.env.*.local
+*.env
+
+# ===== Base de datos SQLite =====
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/data/
+!backend/data/.gitkeep
+
+# ===== Logs =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+# ===== Build / dist =====
+dist/
+build/
+frontend/dist/
+frontend/.angular/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== Testing / coverage =====
+coverage/
+.nyc_output/
+
+# ===== Archivos temporales =====
+*.tmp
+*.bak
+fix-alumnos.js
+reparar.js
+cvs.ps1
+test.ps1
+test2.ps1
+alumnos-test.csv
