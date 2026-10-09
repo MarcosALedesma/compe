@@ -1,56 +1,83 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-
-interface MenuItem { label: string; path: string; icon: string; roles: string[]; }
-
-const MENU: MenuItem[] = [
-  { label: 'Panel', path: '/dashboard', icon: 'bi-speedometer2', roles: ['director'] },
-  { label: 'Alumnos', path: '/alumnos', icon: 'bi-people', roles: ['director'] },
-  { label: 'Docentes', path: '/docentes', icon: 'bi-person-workspace', roles: ['director'] },
-  { label: 'Cursos', path: '/cursos', icon: 'bi-journal-bookmark', roles: ['director', 'docente'] },
-  { label: 'Notas', path: '/calificaciones', icon: 'bi-card-checklist', roles: ['director', 'docente'] },
-  { label: 'Asistencia', path: '/asistencia', icon: 'bi-clipboard-check', roles: ['director', 'docente'] },
-  { label: 'Calendario', path: '/calendario', icon: 'bi-calendar-event', roles: ['director', 'docente', 'alumno'] },
-  { label: 'Boletín', path: '/boletin', icon: 'bi-file-earmark-text', roles: ['director', 'docente'] },
-  { label: 'Mis notas', path: '/portal', icon: 'bi-mortarboard', roles: ['alumno'] },
-];
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
-  styles: [`
-    nav { background: var(--surface); box-shadow: var(--shadow); position: sticky; top: 0; z-index: 10; }
-    .brand { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
-    .links a { padding: .4rem .7rem; border-radius: 8px; }
-    .links a.active { background: var(--bg); color: var(--primary); }
-    .burger { display: none; background: none; border: 0; font-size: 1.6rem; cursor: pointer; color: var(--primary); }
-    @media (max-width: 800px) {
-      .burger { display: block; }
-      .links { display: none; flex-direction: column; align-items: stretch; width: 100%; padding-top: .5rem; }
-      .links.open { display: flex; }
-      .wrap { flex-wrap: wrap; }
-    }
-  `],
+  imports: [CommonModule, RouterModule],
   template: `
-    @if (auth.isLoggedIn()) {
-      <nav><div class="container row between wrap" style="padding-block: .8rem">
-        <a [routerLink]="auth.homeRoute()" class="brand"><i class="bi bi-mortarboard-fill"></i> EETP Nº 602</a>
-        <button class="burger" (click)="open.set(!open())" aria-label="Menú"><i class="bi bi-list"></i></button>
-        <div class="row links" [class.open]="open()" (click)="open.set(false)">
-          @for (item of items(); track item.path) {
-            <a [routerLink]="item.path" routerLinkActive="active"><i class="bi {{ item.icon }}"></i> {{ item.label }}</a>
-          }
-          <span class="muted">{{ auth.user()?.nombre || auth.user()?.email }}</span>
-          <button class="btn btn-outline btn-sm" (click)="auth.logout()">Salir</button>
-        </div>
-      </div></nav>
-    }
+    <nav class="navbar">
+      <div class="logo">
+        <span class="school">EETP N° 602</span>
+        <span class="app">Prime Dev 2026</span>
+      </div>
+      <button class="menu-toggle" (click)="menuOpen = !menuOpen">☰</button>
+      <ul class="nav-links" [class.open]="menuOpen">
+        <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+        <li *ngIf="rol === 'directivo'"><a routerLink="/alumnos" routerLinkActive="active">Alumnos</a></li>
+        <li *ngIf="rol === 'directivo'"><a routerLink="/docentes" routerLinkActive="active">Docentes</a></li>
+        <li><a routerLink="/cursos" routerLinkActive="active">Cursos</a></li>
+        <li><a routerLink="/calificaciones" routerLinkActive="active">Notas</a></li>
+        <li *ngIf="rol === 'docente'"><a routerLink="/asistencia" routerLinkActive="active">Asistencia</a></li>
+        <li><a routerLink="/calendario" routerLinkActive="active">Calendario</a></li>
+        <li><a routerLink="/boletin" routerLinkActive="active">Boletín</a></li>
+      </ul>
+      <div class="user-info">
+        <span>{{ userEmail }}</span>
+        <button (click)="logout()" class="btn-logout">Salir</button>
+      </div>
+    </nav>
   `,
+  styles: [`
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #1a237e; color: white; padding: 0.75rem 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .logo { display: flex; flex-direction: column; }
+    .school { font-weight: bold; font-size: 1.1rem; }
+    .app { font-size: 0.75rem; opacity: 0.8; }
+    .nav-links { display: flex; list-style: none; gap: 1rem; margin: 0; padding: 0; }
+    .nav-links a {
+      color: white; text-decoration: none; padding: 0.5rem 0.75rem;
+      border-radius: 4px; transition: background 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.2); }
+    .user-info { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; }
+    .btn-logout {
+      background: #dc3545; color: white; border: none; padding: 0.4rem 0.8rem;
+      border-radius: 4px; cursor: pointer;
+    }
+    .menu-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+      .nav-links {
+        display: none; flex-direction: column; position: absolute; top: 60px;
+        left: 0; right: 0; background: #1a237e; padding: 1rem; z-index: 100;
+      }
+      .nav-links.open { display: flex; }
+      .user-info span { display: none; }
+    }
+  `]
 })
-export class NavbarComponent {
-  auth = inject(AuthService);
-  open = signal(false);
-  items = computed(() => MENU.filter((m) => this.auth.rol() && m.roles.includes(this.auth.rol()!)));
+export class NavbarComponent implements OnInit {
+  menuOpen = false;
+  rol = '';
+  userEmail = '';
+
+  constructor(private auth: AuthService, private router: Router) {}
+
+  ngOnInit() {
+    const user = this.auth.getUser();
+    if (user) {
+      this.rol = user.rol?.toLowerCase() || '';
+      this.userEmail = user.email || '';
+    }
+  }
+
+  logout() {
+    this.auth.logout();
+  }
 }
