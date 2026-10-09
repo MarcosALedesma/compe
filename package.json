@@ -1,0 +1,12 @@
+{
+  "name": "competencia-template",
+  "private": true,
+  "scripts": {
+    "install:all": "bun install && cd backend && bun install && cd ../frontend && bun install",
+    "dev": "concurrently -n back,front -c blue,green \"cd backend && bun run dev\" \"cd frontend && bun run start\"",
+    "seed": "cd backend && bun run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
