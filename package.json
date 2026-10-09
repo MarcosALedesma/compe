@@ -1,12 +1,41 @@
 {
-  "name": "competencia-template",
+  "name": "eetp602",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "install:all": "bun install && cd backend && bun install && cd ../frontend && bun install",
-    "dev": "concurrently -n back,front -c blue,green \"cd backend && bun run dev\" \"cd frontend && bun run start\"",
-    "seed": "cd backend && bun run seed"
+    "ng": "ng",
+    "dev:client": "ng serve --proxy-config proxy.conf.json",
+    "dev:server": "bun --watch server/src/server.js",
+    "build": "ng build",
+    "start": "bun server/src/server.js",
+    "seed": "bun server/src/seed/seed.js",
+    "seed:reset": "bun server/src/seed/seed.js --reset",
+    "watch": "ng build --watch --configuration development"
+  },
+  "dependencies": {
+    "@angular/animations": "^18.2.0",
+    "@angular/common": "^18.2.0",
+    "@angular/compiler": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/forms": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@angular/platform-browser-dynamic": "^18.2.0",
+    "@angular/router": "^18.2.0",
+    "bootstrap-icons": "^1.11.3",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zod": "^3.23.8",
+    "zone.js": "~0.14.10"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0"
+    "@angular-devkit/build-angular": "^18.2.21",
+    "@angular/cli": "^18.2.21",
+    "@angular/compiler-cli": "^18.2.0",
+    "typescript": "~5.5.2"
   }
+  
 }

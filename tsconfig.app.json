@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": "./out-tsc/app", "types": [] },
+  "files": ["client/src/main.ts"],
+  "include": ["client/src/**/*.d.ts"]
+}

@@ -1,7 +1,5 @@
-node_modules/
-dist/
-.angular/
-.env
-backend/data/*.db
-*.log
-.ng-tmp/
+node_modules
+dist
+.angular
+server/data
+out-tsc

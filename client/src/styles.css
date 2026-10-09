@@ -1,0 +1,443 @@
+/* ============================================
+   SISTEMA EETP N° 602 - Estilos Globales
+   Paleta: Amarillo / Negro / Rojo / Blanco
+   ============================================ */
+
+:root {
+  /* Colores institucionales */
+  --amarillo: #FFC107;
+  --amarillo-oscuro: #E0A800;
+  --amarillo-claro: #FFD54F;
+  --negro: #111111;
+  --negro-suave: #1C1C1C;
+  --rojo: #D32F2F;
+  --rojo-oscuro: #B71C1C;
+  --blanco: #FFFFFF;
+  --gris-claro: #F5F5F5;
+  --gris-medio: #E0E0E0;
+  --gris-texto: #555555;
+
+  /* Tipografía */
+  --fuente: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --radio: 8px;
+  --sombra: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --sombra-fuerte: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+  /* Degrade */
+  --degrade1:
+        radial-gradient(circle at 20% 20%, rgba(255, 193, 7, 0.15), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(211, 47, 47, 0.1), transparent 50%),
+        #111;
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* ============================================
+   Fix para que app-root ocupe toda la pantalla
+   ============================================ */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--fuente);
+  background: var(--degrade1);
+  color: #333;
+}
+
+app-root {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 100vh !important;
+  width: 100% !important;
+}
+
+/* El router-outlet no debe generar caja, así los hijos ocupan toda la pantalla */
+router-outlet {
+  display: contents !important;
+}
+
+/* Los hijos directos del app-root (excepto el navbar) se estiran */
+app-root > *:not(.navbar-institucional) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   NAVBAR institucional
+   ============================================ */
+.navbar-institucional {
+  background: linear-gradient(180deg, var(--negro), #000);
+  color: var(--blanco);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 3px solid var(--amarillo);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.navbar-institucional .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--blanco);
+}
+
+.navbar-institucional .brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.navbar-institucional .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.navbar-institucional .brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--amarillo);
+  letter-spacing: 0.5px;
+}
+
+.navbar-institucional .brand-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Links del navbar */
+.navbar-institucional .nav-links {
+  display: flex;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-institucional .nav-links a {
+  color: var(--blanco);
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.navbar-institucional .nav-links a:hover {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: var(--amarillo);
+  color: var(--amarillo);
+}
+
+.navbar-institucional .nav-links a.active {
+  background: var(--amarillo);
+  color: var(--negro);
+  border-color: var(--amarillo);
+}
+
+/* Info de usuario (desktop) */
+.navbar-institucional .user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.btn-logout {
+  background: var(--rojo);
+  color: var(--blanco);
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--rojo-oscuro);
+}
+
+/* Menú hamburguesa */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: 2px solid var(--amarillo);
+  color: var(--amarillo);
+  border-radius: 6px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+}
+
+/* ============================================
+   Botón Salir DENTRO del menú hamburguesa (mobile)
+   ============================================ */
+.navbar-institucional .nav-links .mobile-only {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  align-items: stretch;
+}
+
+.navbar-institucional .nav-links .user-email-mobile {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 0.25rem 0;
+  word-break: break-all;
+}
+
+.navbar-institucional .nav-links .btn-logout-mobile {
+  background: var(--rojo);
+  color: var(--blanco);
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.navbar-institucional .nav-links .btn-logout-mobile:hover {
+  background: var(--rojo-oscuro);
+}
+
+/* ============================================
+   Botones genéricos
+   ============================================ */
+.btn-primary {
+  background: var(--amarillo);
+  color: var(--negro);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: var(--amarillo-oscuro);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--negro);
+  color: var(--blanco);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #333;
+}
+
+.btn-danger {
+  background: var(--rojo);
+  color: var(--blanco);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: var(--rojo-oscuro);
+}
+
+/* ============================================
+   Títulos y contenedores
+   ============================================ */
+h1, h2, h3, h4 {
+  color: var(--negro);
+  font-weight: 800;
+}
+
+h1 {
+  border-bottom: 3px solid var(--amarillo);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+/* ============================================
+   Tablas
+   ============================================ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  overflow: hidden;
+  box-shadow: var(--sombra);
+}
+
+.table th {
+  background: var(--negro);
+  color: var(--amarillo);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--gris-medio);
+}
+
+.table tbody tr:hover {
+  background: #FFFBEA;
+}
+
+/* ============================================
+   Formularios
+   ============================================ */
+input, select, textarea {
+  font-family: var(--fuente);
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--gris-medio);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--amarillo);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+}
+
+label {
+  font-weight: 600;
+  color: var(--negro);
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* ============================================
+   Cards y modales
+   ============================================ */
+.card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 1.5rem;
+  box-shadow: var(--sombra);
+  border-left: 4px solid var(--amarillo);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-top: 4px solid var(--amarillo);
+  box-shadow: var(--sombra-fuerte);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--negro);
+  border-bottom: 2px solid var(--amarillo);
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================
+   Estados
+   ============================================ */
+.aprobado { color: #2E7D32; font-weight: 700; }
+.desaprobado { color: var(--rojo); font-weight: 700; }
+.alerta-faltas {
+  color: var(--rojo);
+  font-weight: 700;
+  background: #FFEBEE;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--rojo);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 900px) {
+  .navbar-institucional .menu-toggle { display: block; }
+  .navbar-institucional .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--negro);
+    padding: 1rem;
+    gap: 0.25rem;
+    border-top: 2px solid var(--amarillo);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+  .navbar-institucional .nav-links.open { display: flex; }
+  .navbar-institucional .nav-links a { width: 100%; }
+  .navbar-institucional .user-info { display: none !important; }
+  .navbar-institucional .nav-links .mobile-only { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 1rem; }
+  h1 { font-size: 1.4rem; }
+  .table th, .table td { padding: 0.5rem; font-size: 0.85rem; }
+  .navbar-institucional { padding: 0.5rem 1rem; }
+  .navbar-institucional .brand-title { font-size: 0.9rem; }
+}
