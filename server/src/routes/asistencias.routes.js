@@ -7,11 +7,11 @@ const router = Router();
 
 // Específicas primero
 router.get('/curso/:cursoId', auth, requireRole('directivo', 'docente'), ctrl.porCursoYFecha);
-router.get('/resumen', auth, ctrl.resumen);
-router.get('/alumno/:alumnoId', auth, ctrl.porAlumno);
+router.get('/resumen', auth, requireRole('directivo', 'docente'), ctrl.resumen);
+router.get('/alumno/:alumnoId', auth, requireRole('directivo', 'docente'), ctrl.porAlumno);
 router.post('/toma', auth, requireRole('directivo', 'docente'), ctrl.tomarAsistencia);
 
 // Genéricas al final
-router.get('/', auth, ctrl.listar);
+router.get('/', auth, requireRole('directivo', 'docente'), ctrl.listar);
 
 export default router;

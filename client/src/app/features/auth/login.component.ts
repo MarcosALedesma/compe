@@ -140,8 +140,9 @@ export class LoginComponent {
     this.error = '';
     this.auth.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
-        const user = res.user;
-        if (user.rol === 'ALUMNO') this.router.navigate(['/portal-alumno']);
+        const rol = String(res.user.rol).toLowerCase();
+        if (rol === 'alumno') this.router.navigate(['/portal-alumno']);
+        else if (rol === 'docente') this.router.navigate(['/asistencia']);
         else this.router.navigate(['/dashboard']);
       },
       error: () => {

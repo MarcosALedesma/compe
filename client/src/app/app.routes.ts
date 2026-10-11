@@ -7,6 +7,7 @@ export const routes: Routes = [
   { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [AuthGuard] },
   { path: 'alumnos', loadComponent: () => import('./features/alumnos/alumnos.component').then(m => m.AlumnosComponent), canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'DIRECTIVO' } },
   { path: 'docentes', loadComponent: () => import('./features/docentes/docentes.component').then(m => m.DocentesComponent), canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'DIRECTIVO' } },
+  { path: 'usuarios', loadComponent: () => import('./features/usuarios/usuarios.component').then(m => m.UsuariosComponent), canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'DIRECTIVO' } },
   { path: 'cursos', loadComponent: () => import('./features/cursos/cursos.component').then(m => m.CursosComponent), canActivate: [AuthGuard] },
   { path: 'calificaciones', loadComponent: () => import('./features/calificaciones/calificaciones.component').then(m => m.CalificacionesComponent), canActivate: [AuthGuard] },
   { path: 'asistencia', loadComponent: () => import('./features/asistencia/asistencia.component').then(m => m.AsistenciaComponent), canActivate: [AuthGuard, RoleGuard], data: { expectedRole: 'DOCENTE' } },

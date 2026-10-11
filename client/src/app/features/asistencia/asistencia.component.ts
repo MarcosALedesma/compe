@@ -55,7 +55,7 @@ export class AsistenciaComponent implements OnInit {
   cursos: any[] = [];
   alumnos: any[] = [];
   cursoSeleccionado = '';
-  fecha = new Date().toISOString().split('T')[0];
+  fecha = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
   asistencias: { [key: number]: string } = {};
 
   constructor(private api: ApiService) {}
@@ -65,24 +65,37 @@ export class AsistenciaComponent implements OnInit {
   }
 
   cargarAlumnos() {
-    if (!this.cursoSeleccionado) return;
-    this.api.get<any[]>(`/alumnos?curso_id=${this.cursoSeleccionado}`).subscribe(data => {
-      this.alumnos = data;
-      // Inicializar todos como Presente por defecto
-      this.alumnos.forEach(a => this.asistencias[a.id] = 'P');
+    if (!this.cursoSeleccionado || !this.fecha) {
+      this.alumnos = [];
+      this.asistencias = {};
+      return;
+    }
+
+    this.api.get<{ alumnos: any[] }>(`/asistencias/curso/${this.cursoSeleccionado}?fecha=${this.fecha}`).subscribe({
+      next: data => {
+        this.alumnos = data.alumnos;
+        this.asistencias = {};
+        this.alumnos.forEach(alumno => this.asistencias[alumno.id] = alumno.estado ?? 'P');
+      },
+      error: () => alert('No se pudo cargar la asistencia del curso')
     });
   }
 
   guardarAsistencia() {
-    const payload = Object.keys(this.asistencias).map(alumnoId => ({
-      alumno_id: Number(alumnoId),
-      fecha: this.fecha,
-      estado: this.asistencias[Number(alumnoId)]
+    if (!this.cursoSeleccionado || this.alumnos.length === 0) return;
+
+    const registros = this.alumnos.map(alumno => ({
+      alumno_id: alumno.id,
+      estado: this.asistencias[alumno.id]
     }));
 
-    this.api.post('/asistencias/bulk', payload).subscribe(() => {
-      alert('Asistencia guardada correctamente');
-      // Verificar alerta de 20 faltas (esto podría venir del backend)
+    this.api.post('/asistencias/toma', {
+      curso_id: Number(this.cursoSeleccionado),
+      fecha: this.fecha,
+      registros
+    }).subscribe({
+      next: () => alert('Asistencia guardada correctamente'),
+      error: () => alert('No se pudo guardar la asistencia')
     });
   }
 }

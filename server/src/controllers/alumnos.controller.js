@@ -1,14 +1,18 @@
 import { db } from '../config/db.js';
 import { HttpError } from '../utils/httpError.js';
+import { requireStudentAccess } from '../utils/access.js';
 
 export const listar = (req, res, next) => {
   try {
     const { search = '', curso_id, activo = 1 } = req.query;
     const like = `%${search}%`;
 
+    const datosSensibles = req.user.rol === 'directivo'
+      ? 'a.fecha_nac, a.tutor, a.telefono_tutor,'
+      : '';
     let sql = `
-      SELECT a.id, a.dni, a.apellido, a.nombre, a.fecha_nac,
-             a.tutor, a.telefono_tutor, a.activo,
+      SELECT a.id, a.dni, a.apellido, a.nombre, ${datosSensibles}
+             a.activo,
              c.id AS curso_id, c.anio, c.division, c.turno
       FROM alumnos a
       LEFT JOIN cursos c ON c.id = a.curso_id
@@ -21,6 +25,13 @@ export const listar = (req, res, next) => {
       sql += ' AND a.curso_id = ?';
       params.push(Number(curso_id));
     }
+    if (req.user.rol === 'docente') {
+      sql += ` AND EXISTS (
+        SELECT 1 FROM materias_curso mc
+        WHERE mc.curso_id = a.curso_id AND mc.docente_id = ?
+      )`;
+      params.push(req.user.docente_id);
+    }
     sql += ' ORDER BY a.apellido, a.nombre';
 
     res.json(db.query(sql).all(...params));
@@ -31,9 +42,39 @@ export const listar = (req, res, next) => {
 
 export const obtener = (req, res, next) => {
   try {
-    const alumno = db.query('SELECT * FROM alumnos WHERE id = ?').get(req.params.id);
+    const alumnoId = Number(req.params.id);
+    requireStudentAccess(req.user, alumnoId);
+    const columns = req.user.rol === 'directivo'
+      ? 'a.*, c.anio, c.division, c.turno'
+      : 'a.id, a.dni, a.apellido, a.nombre, a.activo, a.curso_id, c.anio, c.division, c.turno';
+    const alumno = db.query(`
+      SELECT ${columns} FROM alumnos a
+      LEFT JOIN cursos c ON c.id = a.curso_id
+      WHERE a.id = ?
+    `).get(alumnoId);
     if (!alumno) throw new HttpError(404, 'Alumno no encontrado');
     res.json(alumno);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const historialCursos = (req, res, next) => {
+  try {
+    const alumnoId = Number(req.params.id);
+    const alumno = db.query('SELECT id FROM alumnos WHERE id = ?').get(alumnoId);
+    if (!alumno) throw new HttpError(404, 'Alumno no encontrado');
+    requireStudentAccess(req.user, alumnoId);
+
+    const historial = db.query(`
+      SELECT ac.id, ac.fecha_inicio, ac.fecha_fin,
+             c.id AS curso_id, c.anio, c.division, c.turno, c.ciclo_lectivo
+      FROM alumnos_cursos ac
+      JOIN cursos c ON c.id = ac.curso_id
+      WHERE ac.alumno_id = ?
+      ORDER BY ac.fecha_inicio DESC, ac.id DESC
+    `).all(alumnoId);
+    res.json(historial);
   } catch (err) {
     next(err);
   }
@@ -171,7 +212,7 @@ export async function importarCSV(req, res) {
 
     for (let i = 0; i < filas.length; i++) {
       const numLinea = i + (tieneCabecera ? 2 : 1);
-      const columnas = filas[i].split(',').map((c) => c.trim());
+        const columnas = filas[i].split(',').map((c) => c.trim());
 
       if (columnas.length < 3) {
         rechazados.push({

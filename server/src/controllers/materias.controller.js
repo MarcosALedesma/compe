@@ -1,10 +1,18 @@
 import { db } from '../config/db.js';
 import { HttpError } from '../utils/httpError.js';
+import { requireCourseAccess } from '../utils/access.js';
 
 // Catálogo de materias
 export const listarMaterias = (req, res, next) => {
   try {
-    res.json(db.query('SELECT * FROM materias ORDER BY anio, nombre').all());
+    const rows = req.user.rol === 'docente'
+      ? db.query(`
+          SELECT DISTINCT m.* FROM materias m
+          JOIN materias_curso mc ON mc.materia_id = m.id
+          WHERE mc.docente_id = ? ORDER BY m.anio, m.nombre
+        `).all(req.user.docente_id)
+      : db.query('SELECT * FROM materias ORDER BY anio, nombre').all();
+    res.json(rows);
   } catch (err) { next(err); }
 };
 
@@ -21,6 +29,11 @@ export const crearMateria = (req, res, next) => {
 // Materias asignadas a un curso
 export const listarMateriasDeCurso = (req, res, next) => {
   try {
+    requireCourseAccess(req.user, req.params.cursoId);
+    const filtroDocente = req.user.rol === 'docente' ? 'AND mc.docente_id = ?' : '';
+    const params = req.user.rol === 'docente'
+      ? [req.params.cursoId, req.user.docente_id]
+      : [req.params.cursoId];
     const rows = db
       .query(
         `SELECT mc.id, mc.curso_id, mc.materia_id, mc.docente_id,
@@ -29,10 +42,10 @@ export const listarMateriasDeCurso = (req, res, next) => {
          FROM materias_curso mc
          JOIN materias m ON m.id = mc.materia_id
          LEFT JOIN docentes d ON d.id = mc.docente_id
-         WHERE mc.curso_id = ?
+        WHERE mc.curso_id = ? ${filtroDocente}
          ORDER BY m.nombre`
       )
-      .all(req.params.cursoId);
+      .all(...params);
     res.json(rows);
   } catch (err) { next(err); }
 };

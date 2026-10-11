@@ -12,17 +12,17 @@ import { ApiService } from '../../core/services/api.service';
       <h1>Carga de Calificaciones</h1>
       
       <div class="selector-row">
-        <select [(ngModel)]="cursoSeleccionado" (change)="cargarAlumnos()">
+        <select [(ngModel)]="cursoSeleccionado" (change)="cargarMaterias()">
           <option value="">Seleccione Curso</option>
           <option *ngFor="let c of cursos" [value]="c.id">{{ c.anio }}° {{ c.division }} - {{ c.turno }}</option>
         </select>
         
         <select [(ngModel)]="materiaSeleccionada" (change)="cargarAlumnos()">
           <option value="">Seleccione Materia</option>
-          <option *ngFor="let m of materias" [value]="m.id">{{ m.nombre }}</option>
+          <option *ngFor="let m of materias" [value]="m.id">{{ m.materia }}</option>
         </select>
         
-        <select [(ngModel)]="trimestre">
+        <select [(ngModel)]="trimestre" (change)="cargarAlumnos()">
           <option [value]="1">1° Trimestre</option>
           <option [value]="2">2° Trimestre</option>
           <option [value]="3">3° Trimestre</option>
@@ -77,36 +77,72 @@ export class CalificacionesComponent implements OnInit {
 
   ngOnInit() {
     this.api.get<any[]>('/cursos').subscribe(data => this.cursos = data);
-    this.api.get<any[]>('/materias').subscribe(data => this.materias = data);
+  }
+
+  cargarMaterias() {
+    this.materias = [];
+    this.materiaSeleccionada = '';
+    this.alumnos = [];
+    this.notas = {};
+    if (!this.cursoSeleccionado) return;
+
+    this.api.get<any[]>(`/cursos/${this.cursoSeleccionado}/materias`).subscribe({
+      next: data => this.materias = data,
+      error: () => alert('No se pudieron cargar las materias del curso')
+    });
   }
 
   cargarAlumnos() {
+    this.alumnos = [];
+    this.notas = {};
     if (!this.cursoSeleccionado || !this.materiaSeleccionada) return;
-    // Aquí se debería filtrar por materia_curso_id, simplificamos por curso
+
     this.api.get<any[]>(`/alumnos?curso_id=${this.cursoSeleccionado}`).subscribe(data => {
       this.alumnos = data;
-      // Cargar notas existentes si las hay
+    });
+
+    this.api.get<any[]>(`/calificaciones?materia_curso_id=${this.materiaSeleccionada}`).subscribe({
+      next: data => {
+        data
+          .filter(calificacion => calificacion.trimestre === Number(this.trimestre))
+          .forEach(calificacion => this.notas[calificacion.alumno_id] = calificacion.nota);
+      },
+      error: () => alert('No se pudieron cargar las notas existentes')
     });
   }
 
   validarNota(alumnoId: number) {
     const nota = this.notas[alumnoId];
-    if (nota < 1 || nota > 10) {
-      alert('La nota debe estar entre 1 y 10');
-      this.notas[alumnoId] = 0; // Resetear o pedir de nuevo
+    if (nota == null || nota === 0) {
+      delete this.notas[alumnoId];
+      return;
     }
+    if (Number(nota) < 1 || Number(nota) > 10) {
+      alert('La nota debe estar entre 1 y 10');
+      delete this.notas[alumnoId];
+      return;
+    }
+    this.notas[alumnoId] = Number(nota);
   }
 
   guardarNotas() {
-    const payload = Object.keys(this.notas).map(alumnoId => ({
-      alumno_id: Number(alumnoId),
-      materia_curso_id: Number(this.materiaSeleccionada), // Asumiendo que materiaSeleccionada es el ID de materia_curso
-      trimestre: this.trimestre,
-      nota: this.notas[Number(alumnoId)]
-    }));
+    const payload = this.alumnos
+      .filter(alumno => this.notas[alumno.id] != null)
+      .map(alumno => ({
+        alumno_id: alumno.id,
+        materia_curso_id: Number(this.materiaSeleccionada),
+        trimestre: Number(this.trimestre),
+        nota: Number(this.notas[alumno.id])
+      }));
 
-    this.api.post('/calificaciones/bulk', payload).subscribe(() => {
-      alert('Notas guardadas correctamente');
+    if (payload.length === 0) {
+      alert('Ingresá al menos una nota antes de guardar');
+      return;
+    }
+
+    this.api.post('/calificaciones/bulk', { calificaciones: payload }).subscribe({
+      next: () => alert('Notas guardadas correctamente'),
+      error: () => alert('No se guardaron las notas. Revisá los datos y volvé a intentar')
     });
   }
 }

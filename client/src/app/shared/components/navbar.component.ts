@@ -25,6 +25,7 @@ import { AuthService } from '../../core/services/auth.service';
         <li><a routerLink="/dashboard" routerLinkActive="active" (click)="menuOpen = false">Dashboard</a></li>
         <li *ngIf="rol === 'directivo'"><a routerLink="/alumnos" routerLinkActive="active" (click)="menuOpen = false">Alumnos</a></li>
         <li *ngIf="rol === 'directivo'"><a routerLink="/docentes" routerLinkActive="active" (click)="menuOpen = false">Docentes</a></li>
+        <li *ngIf="rol === 'directivo'"><a routerLink="/usuarios" routerLinkActive="active" (click)="menuOpen = false">Usuarios</a></li>
         <li><a routerLink="/cursos" routerLinkActive="active" (click)="menuOpen = false">Cursos</a></li>
         <li><a routerLink="/calificaciones" routerLinkActive="active" (click)="menuOpen = false">Notas</a></li>
         <li *ngIf="rol === 'docente'"><a routerLink="/asistencia" routerLinkActive="active" (click)="menuOpen = false">Asistencia</a></li>

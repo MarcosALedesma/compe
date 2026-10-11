@@ -37,8 +37,9 @@ export interface Curso {
   id: number;
   anio: number;
   division: string;
-  turno: 'Mañana' | 'Tarde';
+  turno: 'mañana' | 'tarde' | 'noche';
   ciclo_lectivo: number;
+  total_alumnos?: number;
 }
 
 export interface Materia {

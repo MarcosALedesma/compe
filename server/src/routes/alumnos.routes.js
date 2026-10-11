@@ -7,8 +7,9 @@ const router = Router();
 
 router.post('/importar', auth, requireRole('directivo'), ctrl.importarCSV);
 
-router.get('/', auth, ctrl.listar);
-router.get('/:id', auth, ctrl.obtener);
+router.get('/', auth, requireRole('directivo', 'docente'), ctrl.listar);
+router.get('/:id/historial-cursos', auth, requireRole('directivo', 'docente'), ctrl.historialCursos);
+router.get('/:id', auth, requireRole('directivo', 'docente'), ctrl.obtener);
 router.post('/', auth, requireRole('directivo'), ctrl.crear);
 router.put('/:id', auth, requireRole('directivo'), ctrl.actualizar);
 router.delete('/:id', auth, requireRole('directivo'), ctrl.bajaLogica);

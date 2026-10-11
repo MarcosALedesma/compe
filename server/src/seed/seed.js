@@ -21,6 +21,7 @@ if (RESET) {
     "calificaciones",
     "asistencias",
     "eventos",
+    "alumnos_cursos",
     "materias_curso",
     "materias",
     "usuarios",

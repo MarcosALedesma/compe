@@ -9,6 +9,6 @@ const router = Router();
 router.get('/curso/:cursoId', auth, requireRole('directivo'), ctrl.porCurso);
 
 // Genérica al final
-router.get('/:alumnoId', auth, ctrl.generar);
+router.get('/:alumnoId', auth, requireRole('directivo', 'alumno'), ctrl.generar);
 
 export default router;

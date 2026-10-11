@@ -5,8 +5,8 @@ import * as ctrl from '../controllers/docentes.controller.js';
 
 const router = Router();
 
-router.get('/', auth, ctrl.listar);
-router.get('/:id', auth, ctrl.obtener);
+router.get('/', auth, requireRole('directivo'), ctrl.listar);
+router.get('/:id', auth, requireRole('directivo'), ctrl.obtener);
 router.post('/', auth, requireRole('directivo'), ctrl.crear);
 router.put('/:id', auth, requireRole('directivo'), ctrl.actualizar);
 router.delete('/:id', auth, requireRole('directivo'), ctrl.bajaLogica);

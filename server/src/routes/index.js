@@ -11,6 +11,7 @@ import eventosRoutes from './eventos.routes.js';
 import panelRoutes from './panel.routes.js';
 import portalRoutes from './portal.routes.js';
 import boletinRoutes from './boletin.routes.js';
+import usuariosRoutes from './usuarios.routes.js';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/eventos', eventosRoutes);
 router.use('/panel', panelRoutes);
 router.use('/portal', portalRoutes);
 router.use('/boletin', boletinRoutes);
+router.use('/usuarios', usuariosRoutes);
 
 export default router;

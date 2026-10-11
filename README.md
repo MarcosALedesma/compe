@@ -107,7 +107,11 @@ cd compe
 bun run install:all
 ```
 
-Esto instala dependencias en la raíz, en `backend/` y en `frontend/`.
+Instala las dependencias del cliente y del servidor declaradas en el `package.json` raíz.
+
+```bash
+bun install
+```
 
 ### 3. Configurar variables de entorno
 
@@ -251,9 +255,9 @@ Desde la raíz del proyecto:
 
 | Comando | Qué hace |
 |---|---|
-| `bun run install:all` | Instala dependencias en raíz + backend + frontend |
+| `bun install` | Instala las dependencias del proyecto |
 | `bun run seed` | Crea y puebla `backend/data/app.db` |
-| `bun run dev` | Levanta backend (`:3000`) y frontend (`:4200`) en paralelo |
+| `bun run dev` | Levanta servidor (`:3000`) y cliente (`:4200`) en paralelo; Ctrl+C detiene ambos |
 
 Desde `backend/`:
 

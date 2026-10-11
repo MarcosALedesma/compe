@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
-    <div class="dashboard-container">
+    <div class="dashboard-container" *ngIf="rol === 'directivo'">
       <h1>Panel de Dirección</h1>
       
       <div class="metrics-grid">
@@ -43,6 +45,31 @@ import { ApiService } from '../../core/services/api.service';
         </div>
       </div>
     </div>
+
+    <div class="dashboard-container" *ngIf="rol === 'docente'">
+      <h1>Panel Docente</h1>
+      <p>Accedé a tus tareas de clase.</p>
+      <div class="metrics-grid">
+        <a class="metric-card action-card" routerLink="/asistencia">
+          <h3>Tomar asistencia</h3>
+          <p>Registrar presentes, ausentes y tardanzas.</p>
+        </a>
+        <a class="metric-card action-card" routerLink="/calificaciones">
+          <h3>Cargar calificaciones</h3>
+          <p>Consultar y cargar notas por curso y materia.</p>
+        </a>
+        <a class="metric-card action-card" routerLink="/cursos">
+          <h3>Consultar cursos</h3>
+          <p>Ver cursos y sus nóminas.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="dashboard-container" *ngIf="rol === 'alumno'">
+      <h1>Portal del Alumno</h1>
+      <p>Consultá tus calificaciones, asistencias y eventos.</p>
+      <a class="metric-card action-card" routerLink="/portal-alumno">Abrir mi portal</a>
+    </div>
   `,
   styles: [`
     .dashboard-container { padding: 2rem; }
@@ -53,9 +80,12 @@ import { ApiService } from '../../core/services/api.service';
     .chart-box { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .bar-row { display: flex; align-items: center; margin-bottom: 0.5rem; gap: 10px; }
     .bar { height: 20px; background: #28a745; border-radius: 4px; transition: width 0.3s; }
+    .action-card { display: block; color: inherit; text-decoration: none; text-align: left; }
+    .action-card p { margin-bottom: 0; }
   `]
 })
 export class DashboardComponent implements OnInit {
+  rol = '';
   totalAlumnos = 0;
   totalDocentes = 0;
   promedioGeneral = 0;
@@ -63,9 +93,12 @@ export class DashboardComponent implements OnInit {
   maxAlumnos = 1;
   topFaltas: any[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
+    this.rol = String(this.auth.getUser()?.rol ?? '').toLowerCase();
+    if (this.rol !== 'directivo') return;
+
     this.api.get<any>('/panel/resumen').subscribe(data => {
       this.totalAlumnos = data.totales?.alumnos ?? 0;
       this.totalDocentes = data.totales?.docentes ?? 0;

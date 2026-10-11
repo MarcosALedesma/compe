@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlumnosService } from '../../core/services/alumnos.service';
+import { CursosService } from '../../core/services/cursos.service';
 import { Alumno } from '../../core/models/models';
 
 @Component({
@@ -52,6 +53,12 @@ import { Alumno } from '../../core/models/models';
             <input [(ngModel)]="alumnoActual.fecha_nac" name="fecha_nac" type="date" placeholder="Fecha Nac." required>
             <input [(ngModel)]="alumnoActual.tutor" name="tutor" placeholder="Tutor" required>
             <input [(ngModel)]="alumnoActual.telefono_tutor" name="telefono" placeholder="Teléfono Tutor" required>
+            <select [(ngModel)]="alumnoActual.curso_id" name="curso_id">
+              <option [ngValue]="null">Sin curso asignado</option>
+              <option *ngFor="let curso of cursos" [ngValue]="curso.id">
+                {{ curso.anio }}° {{ curso.division }} · {{ curso.turno }} · {{ curso.ciclo_lectivo }}
+              </option>
+            </select>
             
             <div class="modal-actions">
               <button type="button" (click)="cerrarModal()">Cancelar</button>
@@ -78,6 +85,7 @@ import { Alumno } from '../../core/models/models';
   `]
 })
 export class AlumnosComponent implements OnInit {
+  cursos: import('../../core/models/models').Curso[] = [];
   alumnos: Alumno[] = [];
   alumnosFiltrados: Alumno[] = [];
   filtro = '';
@@ -85,10 +93,16 @@ export class AlumnosComponent implements OnInit {
   editando = false;
   alumnoActual: Partial<Alumno> = {};
 
-  constructor(private alumnosService: AlumnosService) {}
+  constructor(
+    private alumnosService: AlumnosService,
+    private cursosService: CursosService
+  ) {}
 
   ngOnInit() {
     this.cargarAlumnos();
+    this.cursosService.getCursos().subscribe({
+      next: data => this.cursos = data
+    });
   }
 
   cargarAlumnos() {

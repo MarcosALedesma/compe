@@ -1,5 +1,6 @@
 import { db } from '../config/db.js';
 import { HttpError } from '../utils/httpError.js';
+import { requireCourseAccess, requireMateriaCursoAccess, requireStudentAccess } from '../utils/access.js';
 
 function calcularEstado(promedio, notas) {
   if (notas.length === 0) return 'Sin notas';
@@ -10,9 +11,71 @@ function calcularEstado(promedio, notas) {
   return 'Previa';
 }
 
+function validarCalificacion({ alumno_id, materia_curso_id, trimestre, nota }, user) {
+  if (!Number.isInteger(Number(trimestre)) || Number(trimestre) < 1 || Number(trimestre) > 3) {
+    throw new HttpError(400, 'El trimestre debe ser 1, 2 o 3');
+  }
+  if (typeof nota !== 'number' || nota < 1 || nota > 10) {
+    throw new HttpError(400, 'La nota debe estar entre 1 y 10');
+  }
+
+  const alumno = db.query('SELECT id FROM alumnos WHERE id = ? AND activo = 1').get(alumno_id);
+  if (!alumno) throw new HttpError(404, 'Alumno no encontrado o inactivo');
+
+  const materiaCurso = db.query('SELECT * FROM materias_curso WHERE id = ?').get(materia_curso_id);
+  if (!materiaCurso) throw new HttpError(404, 'Materia-curso no encontrada');
+
+  const inscripcion = db.query(`
+    SELECT 1 FROM alumnos_cursos
+    WHERE alumno_id = ? AND curso_id = ?
+    LIMIT 1
+  `).get(alumno_id, materiaCurso.curso_id);
+  if (!inscripcion) throw new HttpError(400, 'El alumno no pertenece al curso de esa materia');
+
+  requireStudentAccess(user, alumno_id);
+  requireMateriaCursoAccess(user, materia_curso_id);
+  return { alumno_id: Number(alumno_id), materia_curso_id: Number(materia_curso_id), trimestre: Number(trimestre), nota };
+}
+
+function guardarCalificacion(calificacion, usuarioId) {
+  const { alumno_id, materia_curso_id, trimestre, nota } = calificacion;
+  const existente = db.query(
+    'SELECT * FROM calificaciones WHERE alumno_id = ? AND materia_curso_id = ? AND trimestre = ?'
+  ).get(alumno_id, materia_curso_id, trimestre);
+
+  if (existente) {
+    db.query(`
+      INSERT INTO auditoria_calificaciones (calificacion_id, usuario_id, nota_anterior, nota_nueva)
+      VALUES (?, ?, ?, ?)
+    `).run(existente.id, usuarioId, existente.nota, nota);
+    db.query(`
+      UPDATE calificaciones
+      SET nota = ?, modificado_por = ?, modificado_en = datetime('now')
+      WHERE id = ?
+    `).run(nota, usuarioId, existente.id);
+    return { id: existente.id, actualizado: true };
+  }
+
+  const result = db.query(`
+    INSERT INTO calificaciones (alumno_id, materia_curso_id, trimestre, nota, modificado_por)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(alumno_id, materia_curso_id, trimestre, nota, usuarioId);
+  const id = Number(result.lastInsertRowid);
+  db.query(`
+    INSERT INTO auditoria_calificaciones (calificacion_id, usuario_id, nota_anterior, nota_nueva)
+    VALUES (?, ?, NULL, ?)
+  `).run(id, usuarioId, nota);
+  return { id, actualizado: false };
+}
+
 export const listar = (req, res, next) => {
   try {
     const { alumno_id, materia_curso_id, curso_id } = req.query;
+    if (req.user.rol === 'docente') {
+      if (alumno_id) requireStudentAccess(req.user, alumno_id);
+      if (materia_curso_id) requireMateriaCursoAccess(req.user, materia_curso_id);
+      if (curso_id) requireCourseAccess(req.user, curso_id);
+    }
 
     let sql = `
       SELECT c.id, c.alumno_id, c.materia_curso_id, c.trimestre, c.nota,
@@ -32,6 +95,10 @@ export const listar = (req, res, next) => {
     if (alumno_id)          { sql += ' AND c.alumno_id = ?';         params.push(alumno_id); }
     if (materia_curso_id)   { sql += ' AND c.materia_curso_id = ?';  params.push(materia_curso_id); }
     if (curso_id)           { sql += ' AND mc.curso_id = ?';         params.push(curso_id); }
+    if (req.user.rol === 'docente') {
+      sql += ' AND mc.docente_id = ?';
+      params.push(req.user.docente_id);
+    }
 
     sql += ' ORDER BY a.apellido, a.nombre, m.nombre, c.trimestre';
 
@@ -43,6 +110,7 @@ export const listar = (req, res, next) => {
 export const porAlumno = (req, res, next) => {
   try {
     const { alumnoId } = req.params;
+    requireStudentAccess(req.user, alumnoId);
 
     const alumno = db.query('SELECT * FROM alumnos WHERE id = ?').get(alumnoId);
     if (!alumno) throw new HttpError(404, 'Alumno no encontrado');
@@ -94,70 +162,32 @@ export const porAlumno = (req, res, next) => {
 
 export const crearOActualizar = (req, res, next) => {
   try {
-    const { alumno_id, materia_curso_id, trimestre, nota } = req.body;
-    const usuarioId = req.user.id;
+    const calificacion = validarCalificacion(req.body, req.user);
+    const result = db.transaction(() => guardarCalificacion(calificacion, req.user.id))();
+    res.status(result.actualizado ? 200 : 201).json(result);
+  } catch (err) { next(err); }
+};
 
-    if (!Number.isInteger(trimestre) || trimestre < 1 || trimestre > 3) {
-      throw new HttpError(400, 'El trimestre debe ser 1, 2 o 3');
-    }
-    if (typeof nota !== 'number' || nota < 1 || nota > 10) {
-      throw new HttpError(400, 'La nota debe estar entre 1 y 10');
-    }
-
-    const alumno = db.query('SELECT id FROM alumnos WHERE id = ? AND activo = 1').get(alumno_id);
-    if (!alumno) throw new HttpError(404, 'Alumno no encontrado o inactivo');
-
-    const mc = db.query('SELECT * FROM materias_curso WHERE id = ?').get(materia_curso_id);
-    if (!mc) throw new HttpError(404, 'Materia-curso no encontrada');
-
-    const alumnoCurso = db.query('SELECT curso_id FROM alumnos WHERE id = ?').get(alumno_id);
-    if (alumnoCurso.curso_id !== mc.curso_id) {
-      throw new HttpError(400, 'El alumno no pertenece al curso de esa materia');
+export const crearOActualizarMasivo = (req, res, next) => {
+  try {
+    const { calificaciones } = req.body;
+    if (!Array.isArray(calificaciones) || calificaciones.length === 0) {
+      throw new HttpError(400, 'calificaciones debe ser un array no vacío');
     }
 
-    if (req.user.rol === 'docente' && mc.docente_id !== req.user.docente_id) {
-      throw new HttpError(403, 'No podés cargar notas de materias que no dictás');
-    }
-
-    const existente = db
-      .query(
-        'SELECT * FROM calificaciones WHERE alumno_id = ? AND materia_curso_id = ? AND trimestre = ?'
-      )
-      .get(alumno_id, materia_curso_id, trimestre);
-
-    const tx = db.transaction(() => {
-      if (existente) {
-        db.query(
-          `INSERT INTO auditoria_calificaciones (calificacion_id, usuario_id, nota_anterior, nota_nueva)
-           VALUES (?, ?, ?, ?)`
-        ).run(existente.id, usuarioId, existente.nota, nota);
-
-        db.query(
-          `UPDATE calificaciones
-           SET nota = ?, modificado_por = ?, modificado_en = datetime('now')
-           WHERE id = ?`
-        ).run(nota, usuarioId, existente.id);
-
-        return { id: existente.id, actualizado: true };
-      } else {
-        const r = db
-          .query(
-            `INSERT INTO calificaciones (alumno_id, materia_curso_id, trimestre, nota, modificado_por)
-             VALUES (?, ?, ?, ?, ?)`
-          )
-          .run(alumno_id, materia_curso_id, trimestre, nota, usuarioId);
-
-        db.query(
-          `INSERT INTO auditoria_calificaciones (calificacion_id, usuario_id, nota_anterior, nota_nueva)
-           VALUES (?, ?, NULL, ?)`
-        ).run(Number(r.lastInsertRowid), usuarioId, nota);
-
-        return { id: Number(r.lastInsertRowid), actualizado: false };
-      }
+    const claves = new Set();
+    const validadas = calificaciones.map((item) => {
+      const calificacion = validarCalificacion(item, req.user);
+      const clave = `${calificacion.alumno_id}:${calificacion.materia_curso_id}:${calificacion.trimestre}`;
+      if (claves.has(clave)) throw new HttpError(400, 'Hay calificaciones duplicadas en la solicitud');
+      claves.add(clave);
+      return calificacion;
     });
 
-    const result = tx();
-    res.status(result.actualizado ? 200 : 201).json(result);
+    const resultados = db.transaction(() =>
+      validadas.map((calificacion) => guardarCalificacion(calificacion, req.user.id))
+    )();
+    res.json({ ok: true, guardadas: resultados.length, resultados });
   } catch (err) { next(err); }
 };
 
@@ -166,12 +196,7 @@ export const eliminar = (req, res, next) => {
     const cal = db.query('SELECT * FROM calificaciones WHERE id = ?').get(req.params.id);
     if (!cal) throw new HttpError(404, 'Calificación no encontrada');
 
-    if (req.user.rol === 'docente') {
-      const mc = db.query('SELECT docente_id FROM materias_curso WHERE id = ?').get(cal.materia_curso_id);
-      if (mc.docente_id !== req.user.docente_id) {
-        throw new HttpError(403, 'No podés borrar notas de materias que no dictás');
-      }
-    }
+    requireMateriaCursoAccess(req.user, cal.materia_curso_id);
 
     db.query(
       `INSERT INTO auditoria_calificaciones (calificacion_id, usuario_id, nota_anterior, nota_nueva)

@@ -21,17 +21,35 @@ import { Curso } from '../../core/models/models';
         <div class="curso-card" *ngFor="let curso of cursos">
           <div class="curso-header">
             <h3>{{ curso.anio }}° {{ curso.division }}</h3>
-            <span class="turno" [ngClass]="curso.turno === 'Mañana' ? 'manana' : 'tarde'">
+            <span class="turno" [ngClass]="curso.turno === 'mañana' ? 'manana' : 'tarde'">
               {{ curso.turno }}
             </span>
           </div>
-          <p class="ciclo">Ciclo Lectivo {{ curso.ciclo_lectivo }}</p>
+          <p class="ciclo">Ciclo Lectivo {{ curso.ciclo_lectivo }} · {{ curso.total_alumnos ?? 0 }} alumnos</p>
           <div class="acciones">
+            <button (click)="verNomina(curso)" class="btn-edit">Ver alumnos</button>
             <button (click)="editar(curso)" class="btn-edit">Editar</button>
             <button (click)="eliminar(curso.id)" class="btn-delete">Eliminar</button>
           </div>
         </div>
       </div>
+
+      <section class="nomina" *ngIf="cursoDetalle">
+        <div class="curso-header">
+          <h2>{{ cursoDetalle.anio }}° {{ cursoDetalle.division }} · Nómina</h2>
+          <button type="button" (click)="cursoDetalle = null">Cerrar</button>
+        </div>
+        <p>{{ cursoDetalle.alumnos.length }} alumnos · Ciclo Lectivo {{ cursoDetalle.ciclo_lectivo }}</p>
+        <table>
+          <thead><tr><th>DNI</th><th>Apellido</th><th>Nombre</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let alumno of cursoDetalle.alumnos">
+              <td>{{ alumno.dni }}</td><td>{{ alumno.apellido }}</td><td>{{ alumno.nombre }}</td>
+            </tr>
+            <tr *ngIf="cursoDetalle.alumnos.length === 0"><td colspan="3">Este curso todavía no tiene alumnos.</td></tr>
+          </tbody>
+        </table>
+      </section>
 
       <div class="modal-overlay" *ngIf="showModal">
         <div class="modal-content">
@@ -43,8 +61,9 @@ import { Curso } from '../../core/models/models';
             <input [(ngModel)]="cursoActual.division" name="division" required>
             <label>Turno</label>
             <select [(ngModel)]="cursoActual.turno" name="turno" required>
-              <option value="Mañana">Mañana</option>
-              <option value="Tarde">Tarde</option>
+              <option value="mañana">Mañana</option>
+              <option value="tarde">Tarde</option>
+              <option value="noche">Noche</option>
             </select>
             <label>Ciclo Lectivo</label>
             <input type="number" [(ngModel)]="cursoActual.ciclo_lectivo" name="ciclo" required>
@@ -70,6 +89,9 @@ import { Curso } from '../../core/models/models';
     .tarde { background: #d1ecf1; color: #0c5460; }
     .ciclo { color: #666; margin: 0.5rem 0 1rem; }
     .acciones { display: flex; gap: 0.5rem; }
+    .nomina { margin-top: 2rem; overflow-x: auto; }
+    .nomina table { width: 100%; border-collapse: collapse; background: white; }
+    .nomina th, .nomina td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
     .btn-edit { background: #ffc107; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
     .btn-delete { background: #dc3545; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -88,6 +110,7 @@ import { Curso } from '../../core/models/models';
 })
 export class CursosComponent implements OnInit {
   cursos: Curso[] = [];
+  cursoDetalle: any = null;
   showModal = false;
   editando = false;
   cursoActual: Partial<Curso> = {};
@@ -101,6 +124,13 @@ export class CursosComponent implements OnInit {
     this.cargarCursos();
   }
 
+  verNomina(curso: Curso) {
+    this.cursosService.getCurso(curso.id).subscribe({
+      next: detalle => this.cursoDetalle = detalle,
+      error: () => this.toast.show('Error al cargar la nómina del curso', 'error')
+    });
+  }
+
   cargarCursos() {
     this.cursosService.getCursos().subscribe({
       next: (data) => this.cursos = data,
@@ -110,7 +140,7 @@ export class CursosComponent implements OnInit {
 
   abrirModal() {
     this.editando = false;
-    this.cursoActual = { turno: 'Mañana', ciclo_lectivo: 2026 };
+    this.cursoActual = { turno: 'mañana', ciclo_lectivo: new Date().getFullYear() };
     this.showModal = true;
   }
 

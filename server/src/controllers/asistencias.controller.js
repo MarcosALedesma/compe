@@ -1,10 +1,15 @@
 import { db } from '../config/db.js';
 import { HttpError } from '../utils/httpError.js';
+import { requireCourseAccess, requireStudentAccess } from '../utils/access.js';
 
 
 export const listar = (req, res, next) => {
   try {
     const { alumno_id, fecha, curso_id } = req.query;
+    if (req.user.rol === 'docente') {
+      if (alumno_id) requireStudentAccess(req.user, alumno_id);
+      if (curso_id) requireCourseAccess(req.user, curso_id);
+    }
 
     let sql = `
       SELECT s.id, s.alumno_id, s.fecha, s.estado,
@@ -18,6 +23,13 @@ export const listar = (req, res, next) => {
     if (alumno_id) { sql += ' AND s.alumno_id = ?'; params.push(alumno_id); }
     if (fecha)     { sql += ' AND s.fecha = ?';     params.push(fecha); }
     if (curso_id)  { sql += ' AND a.curso_id = ?';  params.push(curso_id); }
+    if (req.user.rol === 'docente') {
+      sql += ` AND EXISTS (
+        SELECT 1 FROM materias_curso mc
+        WHERE mc.curso_id = a.curso_id AND mc.docente_id = ?
+      )`;
+      params.push(req.user.docente_id);
+    }
 
     sql += ' ORDER BY s.fecha DESC, a.apellido, a.nombre';
 
@@ -30,6 +42,7 @@ export const porCursoYFecha = (req, res, next) => {
   try {
     const { cursoId } = req.params;
     const { fecha } = req.query;
+    requireCourseAccess(req.user, cursoId);
 
     if (!fecha) throw new HttpError(400, 'El parámetro fecha es obligatorio');
 
@@ -51,6 +64,7 @@ export const porCursoYFecha = (req, res, next) => {
 export const tomarAsistencia = (req, res, next) => {
   try {
     const { curso_id, fecha, registros } = req.body;
+    requireCourseAccess(req.user, curso_id);
 
     if (!curso_id || !fecha) throw new HttpError(400, 'curso_id y fecha son obligatorios');
     if (!Array.isArray(registros) || registros.length === 0) {
@@ -100,6 +114,7 @@ export const tomarAsistencia = (req, res, next) => {
 export const resumen = (req, res, next) => {
   try {
     const { curso_id } = req.query;
+    if (req.user.rol === 'docente' && curso_id) requireCourseAccess(req.user, curso_id);
 
     let sql = `
       SELECT v.alumno_id, v.apellido, v.nombre, v.curso_id, v.faltas, v.alerta,
@@ -110,6 +125,13 @@ export const resumen = (req, res, next) => {
     `;
     const params = [];
     if (curso_id) { sql += ' AND v.curso_id = ?'; params.push(curso_id); }
+    if (req.user.rol === 'docente') {
+      sql += ` AND EXISTS (
+        SELECT 1 FROM materias_curso mc
+        WHERE mc.curso_id = v.curso_id AND mc.docente_id = ?
+      )`;
+      params.push(req.user.docente_id);
+    }
     sql += ' ORDER BY v.faltas DESC';
 
     res.json(db.query(sql).all(...params));
@@ -120,6 +142,7 @@ export const resumen = (req, res, next) => {
 export const porAlumno = (req, res, next) => {
   try {
     const { alumnoId } = req.params;
+    requireStudentAccess(req.user, alumnoId);
 
     const alumno = db.query('SELECT * FROM alumnos WHERE id = ?').get(alumnoId);
     if (!alumno) throw new HttpError(404, 'Alumno no encontrado');
